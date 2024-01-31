@@ -1,30 +1,20 @@
-import * as firebase from 'firebase/app';
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 import { onRequest } from 'firebase-functions/v2/https';
 import Fastify from 'fastify';
-import env from '@fastify/env';
 import fastifyExpress from '@fastify/express';
 import cors from '@fastify/cors';
-import bcrypt from 'fastify-bcrypt';
+import userRouter from './routes/userRouter.ts';
 import { firebaseConfig } from './firebaseConfig.ts';
-import { schema } from './envSchema.ts';
 
-firebase.initializeApp(firebaseConfig);
+const firebase = initializeApp(firebaseConfig);
+const db = getFirestore(firebase);
 
 const app = Fastify({ logger: true });
 
 await app.register(cors);
 await app.register(fastifyExpress);
-await app.register(env, {
-    schema: schema,
-    dotenv: true,
-});
-await app.register(bcrypt as any, {
-    saltWorkFactor: 12,
-});
-
-app.get('/', async (request, reply) => {
-    reply.send({ hello: 'world' });
-});
+await app.register(userRouter, { prefix: '/api/user' });
 
 const start = async () => {
     try {
@@ -41,3 +31,5 @@ start();
 export const identityServer = onRequest((req, res) => {
     app.express(req, res);
 });
+
+export { db };

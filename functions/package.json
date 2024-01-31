@@ -17,14 +17,15 @@
     "main": "src/index.ts",
     "dependencies": {
         "@fastify/cors": "^9.0.0",
-        "@fastify/env": "^4.3.0",
         "@fastify/express": "^2.3.0",
-        "@fastify/jwt": "^8.0.0",
+        "bcryptjs": "^2.4.3",
+        "dotenv": "^16.4.1",
         "fastify": "^4.26.0",
-        "fastify-bcrypt": "^1.0.1",
         "firebase": "^10.7.2",
         "firebase-admin": "^11.8.0",
-        "firebase-functions": "^4.3.1"
+        "firebase-functions": "^4.3.1",
+        "fluent-json-schema": "^4.2.1",
+        "jsonwebtoken": "^9.0.2"
     },
     "devDependencies": {
         "@types/node": "^20.11.10",
