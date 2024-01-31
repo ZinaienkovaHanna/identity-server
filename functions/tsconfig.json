@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "outDir": "lib",
+        "sourceMap": true,
+        "strict": true,
+        "target": "es2017",
+        "resolveJsonModule": true,
+        "removeComments": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitAny": false,
+        "skipLibCheck": true,
+        "allowImportingTsExtensions": true,
+        "noEmit": true
+    },
+    "compileOnSave": true,
+    "include": ["src"],
+    "exclude": ["node_modules"],
+    "ts-node": {
+        "esm": true
+    }
+}
