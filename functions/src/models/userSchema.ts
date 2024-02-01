@@ -19,9 +19,16 @@ export const signupSchema = {
     headers: S.object(),
 };
 
-export const resetPasswordSchema = {
+export const sendEmailSchema = {
     body: S.object().prop('email', S.string().format(S.FORMATS.EMAIL).required()),
     queryString: S.object(),
     params: S.object(),
+    headers: S.object(),
+};
+
+export const passwordResetSchema = {
+    body: S.object().prop('newPassword', S.string().minLength(8).required()),
+    queryString: S.object(),
+    params: S.object().prop('userId', S.string().required()),
     headers: S.object(),
 };

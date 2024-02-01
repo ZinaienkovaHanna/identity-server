@@ -10,5 +10,4 @@ export const ERRORS = {
     userExists: new Error('User already exists'),
     userNotExists: new Error('User not exists'),
     userCredError: new Error('Invalid credential'),
-    tokenError: new Error('Invalid Token'),
 };

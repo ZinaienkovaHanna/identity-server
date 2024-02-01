@@ -1,6 +1,16 @@
 import { FastifyInstance } from 'fastify';
-import { login, signUp, resetPassword } from '../controllers/userController.ts';
-import { loginSchema, signupSchema, resetPasswordSchema } from '../models/userSchema.ts';
+import {
+    login,
+    signUp,
+    sendPasswordResetEmail,
+    resetPassword,
+} from '../controllers/userController.ts';
+import {
+    loginSchema,
+    signupSchema,
+    sendEmailSchema,
+    passwordResetSchema,
+} from '../models/userSchema.ts';
 
 const userRoter = async (fastify: FastifyInstance) => {
     fastify.decorateRequest('authUser', '');
@@ -21,8 +31,15 @@ const userRoter = async (fastify: FastifyInstance) => {
 
     fastify.route({
         method: 'POST',
-        url: '/reset-password',
-        schema: resetPasswordSchema,
+        url: '/password-reset',
+        schema: sendEmailSchema,
+        handler: sendPasswordResetEmail,
+    });
+
+    fastify.route({
+        method: 'PATCH',
+        url: '/password-reset/:userId',
+        schema: passwordResetSchema,
         handler: resetPassword,
     });
 };

@@ -1,10 +1,24 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { getDocs, collection, addDoc, where, query } from 'firebase/firestore';
-import JWT from 'jsonwebtoken';
+import {
+    getDocs,
+    addDoc,
+    updateDoc,
+    collection,
+    where,
+    query,
+    getDoc,
+    doc,
+} from 'firebase/firestore';
 import { db } from '../index.ts';
 import { handleServerError, ERRORS } from '../helpers/errors.ts';
 import { STANDARD, ERROR409, ERROR400 } from '../helpers/constants.ts';
-import { compareHash, hashPassword } from '../helpers/utils.ts';
+import {
+    compareHash,
+    hashPassword,
+    generateToken,
+    generateResetLink,
+    sendEmail,
+} from '../helpers/utils.ts';
 
 export const login = async (
     req: FastifyRequest<{ Body: { email: string; password: string } }>,
@@ -13,38 +27,22 @@ export const login = async (
     try {
         const { email, password } = req.body;
 
-        const userQuery = query(collection(db, 'users'), where('email', '==', email));
+        const q = query(collection(db, 'users'), where('email', '==', email));
+        const querySnapshot = await getDocs(q);
 
-        const userSnapshot = await getDocs(userQuery);
+        if (querySnapshot.empty) res.code(ERROR400.statusCode).send(ERRORS.userNotExists);
 
-        if (userSnapshot.empty) {
-            res.code(ERROR400.statusCode).send(ERRORS.userNotExists);
-        }
-
-        const user = userSnapshot.docs[0].data();
-
+        const user = querySnapshot.docs[0].data();
         const checkPassword = await compareHash(password, user.password);
 
-        if (!checkPassword) {
-            res.code(ERROR400.statusCode).send(ERRORS.userCredError);
-        }
+        if (!checkPassword) res.code(ERROR400.statusCode).send(ERRORS.userCredError);
 
-        if (process.env.JWT_SECRET === undefined) {
-            throw new Error('JWT_SECRET is not defined');
-        }
-
-        const token = JWT.sign(
-            {
-                id: user.id,
-                email,
-            },
-            process.env.JWT_SECRET
-        );
+        const token = generateToken(user.id, email);
 
         res.code(STANDARD.SUCCESS).send({
             token,
             user: {
-                email,
+                email: user.email,
                 name: user.name,
             },
         });
@@ -60,13 +58,10 @@ export const signUp = async (
     try {
         const { email, password, name } = req.body;
 
-        const userQuery = query(collection(db, 'users'), where('email', '==', email));
+        const q = query(collection(db, 'users'), where('email', '==', email));
+        const querySnapshot = await getDocs(q);
 
-        const userSnapshot = await getDocs(userQuery);
-
-        if (!userSnapshot.empty) {
-            res.code(ERROR409.statusCode).send(ERRORS.userExists);
-        }
+        if (!querySnapshot.empty) res.code(ERROR409.statusCode).send(ERRORS.userExists);
 
         const hashedPassword = await hashPassword(10, password);
 
@@ -76,19 +71,7 @@ export const signUp = async (
             password: hashedPassword,
         });
 
-        console.log('Document written with ID: ', userRef.id);
-
-        if (process.env.JWT_SECRET === undefined) {
-            throw new Error('JWT_SECRET is not defined');
-        }
-
-        const token = JWT.sign(
-            {
-                id: userRef.id,
-                email,
-            },
-            process.env.JWT_SECRET
-        );
+        const token = generateToken(userRef.id, email);
 
         res.code(STANDARD.SUCCESS).send({
             token,
@@ -102,9 +85,66 @@ export const signUp = async (
     }
 };
 
-export const resetPassword = (req: FastifyRequest, res: FastifyReply) => {
+export const sendPasswordResetEmail = async (
+    req: FastifyRequest<{ Body: { email: string } }>,
+    res: FastifyReply
+) => {
     try {
-        console.log('update user');
+        const { email } = req.body;
+
+        const q = query(collection(db, 'users'), where('email', '==', email));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) res.code(ERROR400.statusCode).send(ERRORS.userNotExists);
+
+        const userDoc = querySnapshot.docs[0];
+        const user = userDoc.data();
+        const resetLink = generateResetLink(userDoc.id, user.email);
+
+        sendEmail(user.email, resetLink);
+
+        res.code(STANDARD.SUCCESS).send({
+            message: 'Instructions for password reset sent to your email.',
+            resetLink,
+        });
+    } catch (error) {
+        handleServerError(res, error);
+    }
+};
+
+export const resetPassword = async (
+    req: FastifyRequest<{
+        Params: { userId: string };
+        Body: { newPassword: string };
+    }>,
+    res: FastifyReply
+) => {
+    try {
+        const { userId } = req.params;
+        const { newPassword } = req.body;
+
+        const userRef = doc(db, 'users', userId);
+        const userSnap = await getDoc(userRef);
+        const user = userSnap.data();
+
+        if (!userSnap.exists() || !user) {
+            res.code(ERROR400.statusCode).send(ERRORS.userNotExists);
+            return;
+        }
+
+        const hashedPassword = await hashPassword(10, newPassword);
+
+        await updateDoc(userRef, { password: hashedPassword });
+
+        const newToken = generateToken(userSnap.id, user.email);
+
+        res.code(STANDARD.SUCCESS).send({
+            token: newToken,
+            user: {
+                email: user.email,
+                name: user.name,
+            },
+        });
     } catch (error) {
         handleServerError(res, error);
     }
