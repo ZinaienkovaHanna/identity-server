@@ -1,5 +1,5 @@
 import { FastifyReply } from 'fastify';
-import { ERROR500 } from './constants.ts';
+import { ERROR500 } from './constants';
 
 export const handleServerError = (res: FastifyReply, error: any) => {
     return res.status(ERROR500.statusCode).send(ERROR500);

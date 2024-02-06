@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "identity-server-caf39"
-  }
+    "default": "identity-server-caf39",
+    "dev": "identity-server-caf39"
+  },
+  "targets": {},
+  "etags": {}
 }

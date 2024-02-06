@@ -1,21 +1,19 @@
 {
     "compilerOptions": {
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
+        "module": "commonjs",
+        "target": "es2020",
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "outDir": "lib",
         "sourceMap": true,
         "strict": true,
-        "target": "es2017",
         "resolveJsonModule": true,
         "removeComments": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "noImplicitAny": false,
         "skipLibCheck": true,
-        "allowImportingTsExtensions": true,
-        "noEmit": true
+        "noEmit": false
     },
     "compileOnSave": true,
     "include": ["src"],

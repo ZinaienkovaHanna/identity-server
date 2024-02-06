@@ -9,16 +9,16 @@ import {
     getDoc,
     doc,
 } from 'firebase/firestore';
-import { db } from '../index.ts';
-import { handleServerError, ERRORS } from '../helpers/errors.ts';
-import { STANDARD, ERROR409, ERROR400 } from '../helpers/constants.ts';
+import { handleServerError, ERRORS } from '../helpers/errors';
+import { STANDARD, ERROR409, ERROR400 } from '../helpers/constants';
 import {
     compareHash,
     hashPassword,
     generateToken,
     generateResetLink,
     sendEmail,
-} from '../helpers/utils.ts';
+} from '../helpers/utils';
+import { db } from '../firebase';
 
 export const login = async (
     req: FastifyRequest<{ Body: { email: string; password: string } }>,

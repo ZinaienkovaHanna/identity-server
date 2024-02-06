@@ -1,16 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import {
-    login,
-    signUp,
-    sendPasswordResetEmail,
-    resetPassword,
-} from '../controllers/userController.ts';
-import {
-    loginSchema,
-    signupSchema,
-    sendEmailSchema,
-    passwordResetSchema,
-} from '../models/userSchema.ts';
+import { login, signUp, sendPasswordResetEmail, resetPassword } from '../controllers';
+import { loginSchema, signupSchema, sendEmailSchema, passwordResetSchema } from '../models';
 
 const userRoter = async (fastify: FastifyInstance) => {
     fastify.decorateRequest('authUser', '');
